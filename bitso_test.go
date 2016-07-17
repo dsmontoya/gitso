@@ -5,8 +5,8 @@ import (
   . "github.com/smartystreets/goconvey/convey"
 )
 
-func TestBitso(t *testing.T) {
-  Convey("Given a url to GET", t, func() {
+func TestRequest(t *testing.T) {
+  Convey("Given an url to GET", t, func() {
     path := tickerPath
 
     Convey("When the request is done", func() {

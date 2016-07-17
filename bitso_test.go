@@ -12,8 +12,14 @@ func TestBitso(t *testing.T) {
     Convey("When the request is done", func() {
       ticker := &Ticker{}
       body, err := get(path, nil, ticker)
-      So(err, ShouldBeNil)
-      So(body, ShouldNotBeNil)
+
+      Convey("err should be nil", func() {
+        So(err, ShouldBeNil)
+      })
+
+      Convey("body should not be nil", func() {
+        So(body, ShouldNotBeNil)
+      })
     })
   })
 }

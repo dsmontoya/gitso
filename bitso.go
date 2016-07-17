@@ -22,20 +22,20 @@ type Ticker struct {
   Bid string
 }
 
-func get(path string, query map[string]string, schema interface{}) ([]byte, error) {
+func get(path string, query map[string]string, schema interface{}) (error) {
   url := API_URL + path
   resp, err := http.Get(url)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
   if err != nil {
-    return nil, err
+    return err
   }
   err = json.Unmarshal(body, schema)
 	if err != nil {
-		return nil, err
+		return err
 	}
-  return body, nil
+  return nil
 }

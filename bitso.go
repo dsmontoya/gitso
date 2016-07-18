@@ -2,6 +2,7 @@ package bitso
 
 import (
   "net/http"
+  "net/url"
   "io/ioutil"
   "encoding/json"
 )
@@ -9,6 +10,7 @@ import (
 const (
   API_URL = "https://api.bitso.com/v2/"
   tickerPath = "ticker"
+  transactionsPath = "transactions"
 )
 
 type Ticker struct {
@@ -22,9 +24,23 @@ type Ticker struct {
   Bid string
 }
 
-func get(path string, query map[string]string, schema interface{}) (error) {
-  url := API_URL + path
-  resp, err := http.Get(url)
+type Transaction struct {
+  Amount string
+  Date string
+  Price string
+  Tid int
+  Side string
+}
+
+func get(path string, query *url.Values, schema interface{}) (error) {
+  u, err := url.Parse(API_URL + path)
+  if err != nil {
+    return err
+  }
+  if query != nil {
+    u.RawQuery = query.Encode()
+  }
+  resp, err := http.Get(u.String())
 	if err != nil {
 		return err
 	}

@@ -32,6 +32,17 @@ type Transaction struct {
   Side string
 }
 
+func TickerData(book string) (*Ticker, error) {
+  ticker := &Ticker{}
+  v := &url.Values{}
+  v.Set("book", book)
+  err := get(tickerPath, v, ticker)
+  if err != nil {
+    return nil, err
+  }
+  return ticker, nil
+}
+
 func get(path string, query *url.Values, schema interface{}) (error) {
   u, err := url.Parse(API_URL + path)
   if err != nil {

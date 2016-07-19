@@ -46,6 +46,39 @@ func TestRequest(t *testing.T) {
   })
 }
 
+func TestBitso(t *testing.T) {
+  httpmock.Activate()
+  registerResponder()
+  defer httpmock.DeactivateAndReset()
+  Convey("Public methods", t, func() {
+    Convey("TickerData", func() {
+      Convey("When the ticker for btc_mxn is requested", func() {
+        ticker, err := TickerData("btc_mxn")
+
+        Convey("err should be nil", func() {
+          So(err, ShouldBeNil)
+        })
+
+        Convey("The price high should be 12700.00", func() {
+          So(ticker.High, ShouldEqual, "12700.00")
+        })
+      })
+
+      Convey("When the ticker for eth_mxn is requested", func() {
+        ticker, err := TickerData("eth_mxn")
+
+        Convey("err should be nil", func() {
+          So(err, ShouldBeNil)
+        })
+
+        Convey("The price high should be 213.97", func() {
+          So(ticker.High, ShouldEqual, "213.97")
+        })
+      })
+    })
+  })
+}
+
 func registerResponder() {
   httpmock.RegisterResponder("GET", API_URL + tickerPath,
     func(req *http.Request) (*http.Response, error) {

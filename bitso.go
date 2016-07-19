@@ -9,6 +9,8 @@ import (
 
 const (
   API_URL = "https://api.bitso.com/v2/"
+  btcmxn = "btc_mxn"
+  ethmxn = "eth_mxn"
   tickerPath = "ticker"
   transactionsPath = "transactions"
 )

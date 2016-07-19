@@ -18,7 +18,7 @@ func TestRequest(t *testing.T) {
 
     Convey("When the book is btc_mxn", func() {
       v := &url.Values{}
-      v.Set("book", "btc_mxn")
+      v.Set("book", btcmxn)
       err := get(path, v, ticker)
 
       Convey("err should be nil", func() {
@@ -32,7 +32,7 @@ func TestRequest(t *testing.T) {
 
     Convey("When the book is eth_mxn", func() {
       v := &url.Values{}
-      v.Set("book", "eth_mxn")
+      v.Set("book", ethmxn)
       err := get(path, v, ticker)
 
       Convey("err should be nil", func() {
@@ -53,7 +53,7 @@ func TestBitso(t *testing.T) {
   Convey("Public methods", t, func() {
     Convey("TickerData", func() {
       Convey("When the ticker for btc_mxn is requested", func() {
-        ticker, err := TickerData("btc_mxn")
+        ticker, err := TickerData(btcmxn)
 
         Convey("err should be nil", func() {
           So(err, ShouldBeNil)
@@ -65,7 +65,7 @@ func TestBitso(t *testing.T) {
       })
 
       Convey("When the ticker for eth_mxn is requested", func() {
-        ticker, err := TickerData("eth_mxn")
+        ticker, err := TickerData(ethmxn)
 
         Convey("err should be nil", func() {
           So(err, ShouldBeNil)
@@ -85,7 +85,7 @@ func registerResponder() {
       var ticker *Ticker
       v := req.URL.Query()
       book := v.Get("book")
-      if book == "eth_mxn" {
+      if book == ethmxn {
         ticker = &Ticker{
           High:      "213.97",
           Last:      "212.30",
@@ -96,7 +96,7 @@ func registerResponder() {
           Ask:       "212.30",
           Bid:       "208.27",
         }
-      } else if book == "btc_mxn" || book == "" {
+      } else if book == btcmxn || book == "" {
         ticker = &Ticker{
           High: "12700.00",
           Last: "12640.00",

@@ -75,6 +75,14 @@ func TestBitso(t *testing.T) {
           So(ticker.High, ShouldEqual, "213.97")
         })
       })
+
+      Convey("When the ticker for an invalid book is requested", func() {
+        _, err := TickerData("invalid_book")
+
+        Convey("An error should occur", func() {
+          So(err, ShouldNotBeNil)
+        })
+      })
     })
   })
 }

@@ -1,6 +1,7 @@
 package bitso
 
 import (
+  "errors"
   "net/http"
   "net/url"
   "io/ioutil"
@@ -35,6 +36,10 @@ type Transaction struct {
 }
 
 func TickerData(book string) (*Ticker, error) {
+  if book != btcmxn && book != ethmxn {
+    err := errors.New("Invalid book value")
+    return nil, err
+  }
   ticker := &Ticker{}
   v := &url.Values{}
   v.Set("book", book)

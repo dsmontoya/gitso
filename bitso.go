@@ -35,8 +35,7 @@ type Transaction struct {
   Side string
 }
 
-// Client allows you to access to the public and private
-// endpoints.
+// Client allows you to access to the Bitso API
 type Client struct {
   configuration *Configuration
 }

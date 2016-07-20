@@ -50,6 +50,17 @@ func TestBitso(t *testing.T) {
   httpmock.Activate()
   registerResponder()
   defer httpmock.DeactivateAndReset()
+  Convey("Given a new Client with a nil Configuration", t, func() {
+    client := NewClient(nil)
+
+    Convey("When is asked for the sandbox", func() {
+      isSanbox := client.IsSandbox()
+
+      Convey("The sanbox should be false", func() {
+        So(isSanbox, ShouldBeFalse)
+      })
+    })
+  })
   Convey("Public methods", t, func() {
     Convey("TickerData", func() {
       Convey("When the ticker for btc_mxn is requested", func() {

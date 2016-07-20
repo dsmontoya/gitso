@@ -35,6 +35,37 @@ type Transaction struct {
   Side string
 }
 
+// Client allows you to access to the public and private
+// endpoints.
+type Client struct {
+  configuration *Configuration
+}
+
+// Configuration stores the information needed to access
+// to the private endpoints and the sanbox mode trigger.
+type Configuration struct {
+  Key       string
+  Secret    string
+  ClientId  string
+  Sandbox   bool
+}
+
+// NewClient returns a new Bitso API client. It receives
+// an optional Configuration, which is used to
+// authenticate and enter in sandbox mode.
+func NewClient(configuration *Configuration) *Client {
+  return &Client{configuration}
+}
+
+// IsSandbox returns true if the sandbox mode is
+// turned on.
+func (c *Client) IsSandbox() bool {
+  if c.configuration == nil {
+    return false
+  }
+  return c.configuration.Sandbox
+}
+
 func TickerData(book string) (*Ticker, error) {
   if book != btcmxn && book != ethmxn {
     err := errors.New("Invalid book value")

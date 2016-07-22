@@ -60,11 +60,10 @@ func TestBitso(t *testing.T) {
         So(isSanbox, ShouldBeFalse)
       })
     })
-  })
-  Convey("Public methods", t, func() {
-    Convey("TickerData", func() {
-      Convey("When the ticker for btc_mxn is requested", func() {
-        ticker, err := TickerData(btcmxn)
+
+    Convey("When the ticker is requested", func() {
+      Convey("And the book is btc_mxn", func() {
+        ticker, err := client.Ticker(btcmxn)
 
         Convey("err should be nil", func() {
           So(err, ShouldBeNil)
@@ -75,8 +74,8 @@ func TestBitso(t *testing.T) {
         })
       })
 
-      Convey("When the ticker for eth_mxn is requested", func() {
-        ticker, err := TickerData(ethmxn)
+      Convey("And the book is eth_mxn", func() {
+        ticker, err := client.Ticker(ethmxn)
 
         Convey("err should be nil", func() {
           So(err, ShouldBeNil)
@@ -87,14 +86,17 @@ func TestBitso(t *testing.T) {
         })
       })
 
-      Convey("When the ticker for an invalid book is requested", func() {
-        _, err := TickerData("invalid_book")
+      Convey("And the book is invalid", func() {
+        _, err := client.Ticker("invalid_book")
 
         Convey("An error should occur", func() {
           So(err, ShouldNotBeNil)
         })
       })
     })
+  })
+  Convey("Public methods", t, func() {
+
   })
 }
 

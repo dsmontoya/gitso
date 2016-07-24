@@ -9,7 +9,7 @@ import (
 )
 
 const (
-  API_URL = "https://api.bitso.com/v2/"
+  URL = "https://api.bitso.com/v2/"
   btcmxn = "btc_mxn"
   ethmxn = "eth_mxn"
   tickerPath = "ticker"
@@ -73,15 +73,18 @@ func (c *Client) Ticker(book string) (*Ticker, error) {
   ticker := &Ticker{}
   v := &url.Values{}
   v.Set("book", book)
-  err := get(tickerPath, v, ticker)
+  err := c.get(tickerPath, v, ticker)
   if err != nil {
     return nil, err
   }
   return ticker, nil
 }
 
-func get(path string, query *url.Values, schema interface{}) (error) {
-  u, err := url.Parse(API_URL + path)
+func (c *Client) get(path string, query *url.Values, schema interface{}) (error) {
+  if config := c.configuration; config != nil && config.Sandbox == true {
+    registerResponder()
+  }
+  u, err := url.Parse(URL + path)
   if err != nil {
     return err
   }

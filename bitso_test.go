@@ -8,44 +8,6 @@ import (
   "github.com/jarcoal/httpmock"
 )
 
-func TestRequest(t *testing.T) {
-  httpmock.Activate()
-  registerResponder()
-  defer httpmock.DeactivateAndReset()
-  Convey("Given the ticker path", t, func() {
-    path := tickerPath
-    ticker := &Ticker{}
-
-    Convey("When the book is btc_mxn", func() {
-      v := &url.Values{}
-      v.Set("book", btcmxn)
-      err := get(path, v, ticker)
-
-      Convey("err should be nil", func() {
-        So(err, ShouldBeNil)
-      })
-
-      Convey("The price high should be 12700.00", func() {
-        So(ticker.High, ShouldEqual, "12700.00")
-      })
-    })
-
-    Convey("When the book is eth_mxn", func() {
-      v := &url.Values{}
-      v.Set("book", ethmxn)
-      err := get(path, v, ticker)
-
-      Convey("err should be nil", func() {
-        So(err, ShouldBeNil)
-      })
-
-      Convey("The price high should be 213.97", func() {
-        So(ticker.High, ShouldEqual, "213.97")
-      })
-    })
-  })
-}
-
 func TestBitso(t *testing.T) {
   httpmock.Activate()
   registerResponder()
@@ -58,6 +20,39 @@ func TestBitso(t *testing.T) {
 
       Convey("The sanbox should be false", func() {
         So(isSanbox, ShouldBeFalse)
+      })
+    })
+
+    Convey("Given the ticker path", func() {
+      path := tickerPath
+      ticker := &Ticker{}
+
+      Convey("When the book is btc_mxn", func() {
+        v := &url.Values{}
+        v.Set("book", btcmxn)
+        err := client.get(path, v, ticker)
+
+        Convey("err should be nil", func() {
+          So(err, ShouldBeNil)
+        })
+
+        Convey("The price high should be 12700.00", func() {
+          So(ticker.High, ShouldEqual, "12700.00")
+        })
+      })
+
+      Convey("When the book is eth_mxn", func() {
+        v := &url.Values{}
+        v.Set("book", ethmxn)
+        err := client.get(path, v, ticker)
+
+        Convey("err should be nil", func() {
+          So(err, ShouldBeNil)
+        })
+
+        Convey("The price high should be 213.97", func() {
+          So(ticker.High, ShouldEqual, "213.97")
+        })
       })
     })
 
@@ -95,13 +90,10 @@ func TestBitso(t *testing.T) {
       })
     })
   })
-  Convey("Public methods", t, func() {
-
-  })
 }
 
 func registerResponder() {
-  httpmock.RegisterResponder("GET", API_URL + tickerPath,
+  httpmock.RegisterResponder("GET", URL + tickerPath,
     func(req *http.Request) (*http.Response, error) {
       var ticker *Ticker
       v := req.URL.Query()

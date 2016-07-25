@@ -82,7 +82,7 @@ func (c *Client) Ticker(book string) (*Ticker, error) {
 
 func (c *Client) get(path string, query *url.Values, schema interface{}) (error) {
   if config := c.configuration; config != nil && config.Sandbox == true {
-    registerResponder()
+    //Mock response
   }
   u, err := url.Parse(URL + path)
   if err != nil {

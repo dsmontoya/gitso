@@ -72,7 +72,7 @@ func (c *Client) IsSandbox() bool {
 }
 
 func (c *Client) Ticker(book string) (*Ticker, error) {
-  if book != btcmxn && book != ethmxn {
+  if validateBook(book) == false {
     err := errors.New("Invalid book value")
     return nil, err
   }

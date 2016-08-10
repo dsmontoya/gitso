@@ -14,6 +14,7 @@ const (
   ethmxn = "eth_mxn"
   tickerPath = "ticker"
   transactionsPath = "transactions"
+  orderBookPath = "order_book"
 )
 
 type Ticker struct {
@@ -25,6 +26,11 @@ type Ticker struct {
   Low string
   Ask string
   Bid string
+}
+
+type OrderBook struct {
+  Asks [][]string
+  Bids [][]string
 }
 
 type Transaction struct {
@@ -78,6 +84,25 @@ func (c *Client) Ticker(book string) (*Ticker, error) {
     return nil, err
   }
   return ticker, nil
+}
+
+func (c *Client) OrderBook(book string, group bool) (*OrderBook, error) {
+  if validateBook(book) == false {
+    err := errors.New("Invalid book value")
+    return nil, err
+  }
+  orderBook := &OrderBook{}
+  v := &url.Values{}
+  v.Set("book", book)
+  err := c.get(orderBookPath, v, orderBook)
+  if err != nil {
+    return nil, err
+  }
+  return orderBook, nil
+}
+
+func validateBook(book string) bool {
+  return book == btcmxn || book == ethmxn
 }
 
 func (c *Client) get(path string, query *url.Values, schema interface{}) (error) {

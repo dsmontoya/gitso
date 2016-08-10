@@ -8,7 +8,7 @@ import (
   "github.com/jarcoal/httpmock"
 )
 
-func TestBitso(t *testing.T) {
+func TestClient(t *testing.T) {
   httpmock.Activate()
   registerResponder()
   defer httpmock.DeactivateAndReset()
@@ -89,6 +89,62 @@ func TestBitso(t *testing.T) {
         })
       })
     })
+
+    Convey("When the order book is requested", func() {
+      Convey("An the book is btc_mxn", func() {
+        orderBook, err := client.OrderBook(btcmxn, false)
+
+        Convey("err should be nil", func() {
+          So(err, ShouldBeNil)
+        })
+
+         Convey("The bids should have length 5", func() {
+           So(orderBook.Bids, ShouldHaveLength, 5)
+         })
+      })
+
+      Convey("An the book is eth_mxn", func() {
+        orderBook, err := client.OrderBook(ethmxn, false)
+
+        Convey("err should be nil", func() {
+          So(err, ShouldBeNil)
+        })
+
+        Convey("The bids should have length 4", func() {
+          So(orderBook.Bids, ShouldHaveLength, 4)
+        })
+      })
+    })
+  })
+}
+
+func Test_validateBook(t *testing.T) {
+  Convey("Given a book to validate", t, func() {
+    var validation bool
+
+    Convey("When the book is btc_mxn", func() {
+      validation = validateBook(btcmxn)
+
+      Convey("validateBook should be true", func() {
+        So(validation, ShouldBeTrue)
+      })
+    })
+
+    Convey("When the book is eth_mxn", func() {
+      validation = validateBook(ethmxn)
+
+      Convey("validateBook should be true", func() {
+        So(validation, ShouldBeTrue)
+      })
+    })
+
+    Convey("When the book is invalid", func() {
+      validation = validateBook("invalid_book")
+
+      Convey("validateBook should be false", func() {
+        So(validation, ShouldBeFalse)
+      })
+    })
   })
 }
 
@@ -122,6 +178,66 @@ func registerResponder() {
         }
       }
       resp, err := httpmock.NewJsonResponse(200, ticker)
+      if err != nil {
+        return httpmock.NewStringResponse(500, ""), nil
+      }
+      return resp, nil
+    },
+  )
+
+  httpmock.RegisterResponder("GET", URL + orderBookPath,
+    func(req *http.Request) (*http.Response, error) {
+      var orderBook *OrderBook
+      v := req.URL.Query()
+      book := v.Get("book")
+      if book == ethmxn {
+        orderBook = &OrderBook{
+          Bids: [][]string{
+            []string{
+              "10720.00",
+              "3.15298000",
+            },
+            []string{
+              "10712.40",
+              "0.00326724",
+            },
+            []string{
+              "10711.69",
+              "0.17947681",
+            },
+            []string{
+              "10709.96",
+              "1.12340008",
+            },
+          },
+        }
+      } else if book == btcmxn || book == "" {
+        orderBook = &OrderBook{
+          Bids: [][]string{
+            []string{
+              "210.02",
+              "2.07146938",
+            },
+            []string{
+              "206.62",
+              "50.00000000",
+            },
+            []string{
+              "204.01",
+              "50.00000000",
+            },
+            []string{
+              "204.00",
+              "6.11132353",
+            },
+            []string{
+              "203.20",
+              "10.20000000",
+            },
+          },
+        }
+      }
+      resp, err := httpmock.NewJsonResponse(200, orderBook)
       if err != nil {
         return httpmock.NewStringResponse(500, ""), nil
       }

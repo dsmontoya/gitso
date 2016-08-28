@@ -101,6 +101,28 @@ func (c *Client) OrderBook(book string, group bool) (*OrderBook, error) {
   return orderBook, nil
 }
 
+/*
+Transactions returns a list of recent trades from the specified book
+and the specified time frame.
+
+Valid time frames are hour and minute. Leaving time blank will set hour as the default frame.
+*/
+func (c *Client) Transactions(book string, time string) ([]*Transaction, error) {
+  var transactions []*Transaction
+  if validateBook(book) == false {
+    err := errors.New("Invalid book value")
+    return nil, err
+  }
+  v := &url.Values{}
+  v.Set("book", book)
+  v.Set("time", time)
+  err := c.get(transactionsPath, v, &transactions)
+  if err != nil {
+    return nil, err
+  }
+  return transactions, nil
+}
+
 func validateBook(book string) bool {
   return book == btcmxn || book == ethmxn
 }

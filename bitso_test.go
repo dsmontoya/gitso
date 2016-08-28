@@ -115,6 +115,56 @@ func TestClient(t *testing.T) {
         })
       })
     })
+
+    Convey("When the last transactions are requested", func() {
+      Convey("And the book is btc_mxn", func() {
+        transactions, err := client.Transactions(btcmxn, "")
+
+        Convey("err should be nil", func() {
+          So(err, ShouldBeNil)
+        })
+
+         Convey("The transactions should have length 4", func() {
+           So(transactions, ShouldHaveLength, 4)
+         })
+
+         Convey("When time is equal to minute", func() {
+           transactions, err := client.Transactions(btcmxn, "minute")
+
+           Convey("err should be nil", func() {
+             So(err, ShouldBeNil)
+           })
+
+           Convey("The transactions should have length 2", func() {
+             So(transactions, ShouldHaveLength, 2)
+           })
+         })
+      })
+
+      Convey("An the book is eth_mxn", func() {
+        transactions, err := client.Transactions(ethmxn, "")
+
+        Convey("err should be nil", func() {
+          So(err, ShouldBeNil)
+        })
+
+        Convey("The transactions should have length 2", func() {
+          So(transactions, ShouldHaveLength, 2)
+        })
+
+        Convey("When time is equal to minute", func() {
+          transactions, err := client.Transactions(ethmxn, "minute")
+
+          Convey("err should be nil", func() {
+            So(err, ShouldBeNil)
+          })
+
+          Convey("The transactions should have length 1", func() {
+            So(transactions, ShouldHaveLength, 1)
+          })
+        })
+      })
+    })
   })
 }
 
@@ -238,6 +288,76 @@ func registerResponder() {
         }
       }
       resp, err := httpmock.NewJsonResponse(200, orderBook)
+      if err != nil {
+        return httpmock.NewStringResponse(500, ""), nil
+      }
+      return resp, nil
+    },
+  )
+
+  httpmock.RegisterResponder("GET", URL + transactionsPath,
+    func(req *http.Request) (*http.Response, error) {
+      var transactions []*Transaction
+      v := req.URL.Query()
+      book := v.Get("book")
+      time := v.Get("time")
+      _ = v.Get("time")
+      if book == ethmxn {
+        transactions = []*Transaction{
+          &Transaction{
+            Amount: "1.94511553",
+            Date: "1470876646",
+            Price: "212.03",
+            Tid: 159075,
+            Side: "sell",
+          },
+          &Transaction{
+            Amount: "1.79120536",
+            Date: "1470876493",
+            Price: "224.00",
+            Tid: 159074,
+            Side: "sell",
+          },
+        }
+        if time == "minute" {
+          transactions = transactions[0:1]
+        }
+      } else if book == btcmxn || book == "" {
+        transactions = []*Transaction{
+          &Transaction{
+            Amount: "0.02200000",
+            Date: "1470876646",
+            Price: "10931.02",
+            Tid: 159075,
+            Side: "sell",
+          },
+          &Transaction{
+            Amount: "0.14089557",
+            Date: "1470876493",
+            Price: "10931.02",
+            Tid: 159074,
+            Side: "sell",
+          },
+          &Transaction{
+            Amount: "0.03561408",
+            Date: "1470876493",
+            Price: "10925.67",
+            Tid: 159073,
+            Side: "sell",
+          },
+          &Transaction{
+            Amount: "0.01737102",
+            Date: "1470876189",
+            Price: "10925.67",
+            Tid: 159072,
+            Side: "sell",
+          },
+        }
+        if time == "minute" {
+          transactions = transactions[0:2]
+        }
+      }
+      resp, err := httpmock.NewJsonResponse(200, transactions)
       if err != nil {
         return httpmock.NewStringResponse(500, ""), nil
       }

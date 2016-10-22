@@ -166,6 +166,33 @@ func TestClient(t *testing.T) {
       })
     })
   })
+
+  Convey("Given a new Client with key, secret and id", t, func() {
+    config := &Configuration{
+      Key: "key",
+      Secret: "secret",
+      ClientId: "clientId",
+    }
+    client := NewClient(config)
+    Convey("When the signature is generated", func() {
+      shouldBeCalled(sign)
+      sign("lol", "yay")
+      client.getSignature()
+    })
+  })
+
+  Convey("Given a message to sign with a private key", t, func() {
+    message := "message"
+    key := "secret"
+
+    Convey("When the message signed", func() {
+      signature := sign(message, key)
+
+      Convey("The signature should be as expected", func() {
+        So(signature, ShouldEqual, "8b5f48702995c1598c573db1e21866a9b825d4a794d169d7060a03605796360b")
+      })
+    })
+  })
 }
 
 func Test_validateBook(t *testing.T) {

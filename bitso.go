@@ -1,6 +1,12 @@
 package bitso
 
 import (
+  "fmt"
+  "strconv"
+  "time"
+  "crypto/hmac"
+  "encoding/hex"
+  "crypto/sha256"
   "errors"
   "net/http"
   "net/url"
@@ -123,6 +129,27 @@ func (c *Client) Transactions(book string, time string) ([]*Transaction, error) 
   return transactions, nil
 }
 
+func (c *Client) getSignature() (signature, nonce string) {
+  if c.validateConfiguration() == false {
+    panic("can't generate a signature without configuration")
+  }
+  nonce = strconv.FormatInt(time.Now().UnixNano(), 10)
+  key := c.configuration.Key
+  clientId := c.configuration.ClientId
+  secret := c.configuration.Secret
+  message := nonce + key + clientId
+  fmt.Println(message)
+  signature = sign(message, secret)
+  return
+}
+
+func (c *Client) validateConfiguration() bool {
+  if c.configuration == nil {
+    return false
+  }
+  return true
+}
+
 func validateBook(book string) bool {
   return book == btcmxn || book == ethmxn
 }
@@ -152,4 +179,21 @@ func (c *Client) get(path string, query *url.Values, schema interface{}) (error)
 		return err
 	}
   return nil
+}
+
+func shouldBeCalled(function interface{}) bool {
+  fmt.Println(function)
+
+  fmt.Println(function.(func(string, string) string)("m", "k"))
+  return false
+}
+
+func sign(message, key string) string {
+  mac := hmac.New(sha256.New, []byte(key))
+	mac.Write([]byte(message))
+	bytes := mac.Sum(nil)
+  s := hex.EncodeToString(bytes)
+  fmt.Println(s)
+
+  return s
 }

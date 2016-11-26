@@ -187,7 +187,5 @@ func sign(message, key string) string {
 	mac.Write([]byte(message))
 	bytes := mac.Sum(nil)
 	s := hex.EncodeToString(bytes)
-	fmt.Println(s)
-
 	return s
 }

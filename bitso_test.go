@@ -191,8 +191,16 @@ func TestClient(t *testing.T) {
 		Convey("When the signature is generated", func() {
 			signature := client.getSignature(getNonce())
 
-			Convey("...", func() {
-				So(signature, ShouldBeEmpty)
+			Convey("The signature should NOT be empty", func() {
+				So(signature, ShouldNotBeEmpty)
+			})
+
+			Convey("When a new signature is generated with a new nonce", func() {
+				newSignature := client.getSignature(getNonce())
+
+				Convey("The newSignature, should be different", func() {
+					So(newSignature, ShouldNotEqual, signature)
+				})
 			})
 		})
 	})

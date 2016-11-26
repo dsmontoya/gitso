@@ -9,8 +9,8 @@ import (
 
 const (
 	URL              = "https://api.bitso.com/v2/"
-	btcmxn           = "btc_mxn"
-	ethmxn           = "eth_mxn"
+	BTCMXN           = "btc_mxn"
+	ETHMXN           = "eth_mxn"
 	tickerPath       = "ticker"
 	transactionsPath = "transactions"
 	orderBookPath    = "order_book"
@@ -45,7 +45,7 @@ func getNonce() int64 {
 }
 
 func validateBook(book string) bool {
-	return book == btcmxn || book == ethmxn
+	return book == BTCMXN || book == ETHMXN
 }
 
 func sign(message, key string) string {

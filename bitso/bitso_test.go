@@ -38,7 +38,7 @@ func Test_validateBook(t *testing.T) {
 		var validation bool
 
 		Convey("When the book is btc_mxn", func() {
-			validation = validateBook(btcmxn)
+			validation = validateBook(BTCMXN)
 
 			Convey("validateBook should be true", func() {
 				So(validation, ShouldBeTrue)
@@ -46,7 +46,7 @@ func Test_validateBook(t *testing.T) {
 		})
 
 		Convey("When the book is eth_mxn", func() {
-			validation = validateBook(ethmxn)
+			validation = validateBook(ETHMXN)
 
 			Convey("validateBook should be true", func() {
 				So(validation, ShouldBeTrue)

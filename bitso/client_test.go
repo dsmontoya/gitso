@@ -30,7 +30,7 @@ func TestClient(t *testing.T) {
 
 			Convey("When the book is btc_mxn", func() {
 				v := &url.Values{}
-				v.Set("book", btcmxn)
+				v.Set("book", BTCMXN)
 				err := client.get(path, v, ticker)
 
 				Convey("err should be nil", func() {
@@ -44,7 +44,7 @@ func TestClient(t *testing.T) {
 
 			Convey("When the book is eth_mxn", func() {
 				v := &url.Values{}
-				v.Set("book", ethmxn)
+				v.Set("book", ETHMXN)
 				err := client.get(path, v, ticker)
 
 				Convey("err should be nil", func() {
@@ -59,7 +59,7 @@ func TestClient(t *testing.T) {
 
 		Convey("When the ticker is requested", func() {
 			Convey("And the book is btc_mxn", func() {
-				ticker, err := client.Ticker(btcmxn)
+				ticker, err := client.Ticker(BTCMXN)
 
 				Convey("err should be nil", func() {
 					So(err, ShouldBeNil)
@@ -71,7 +71,7 @@ func TestClient(t *testing.T) {
 			})
 
 			Convey("And the book is eth_mxn", func() {
-				ticker, err := client.Ticker(ethmxn)
+				ticker, err := client.Ticker(ETHMXN)
 
 				Convey("err should be nil", func() {
 					So(err, ShouldBeNil)
@@ -93,7 +93,7 @@ func TestClient(t *testing.T) {
 
 		Convey("When the order book is requested", func() {
 			Convey("An the book is btc_mxn", func() {
-				orderBook, err := client.OrderBook(btcmxn, false)
+				orderBook, err := client.OrderBook(BTCMXN, false)
 
 				Convey("err should be nil", func() {
 					So(err, ShouldBeNil)
@@ -105,7 +105,7 @@ func TestClient(t *testing.T) {
 			})
 
 			Convey("An the book is eth_mxn", func() {
-				orderBook, err := client.OrderBook(ethmxn, false)
+				orderBook, err := client.OrderBook(ETHMXN, false)
 
 				Convey("err should be nil", func() {
 					So(err, ShouldBeNil)
@@ -119,7 +119,7 @@ func TestClient(t *testing.T) {
 
 		Convey("When the last transactions are requested", func() {
 			Convey("And the book is btc_mxn", func() {
-				transactions, err := client.Transactions(btcmxn, "")
+				transactions, err := client.Transactions(BTCMXN, "")
 
 				Convey("err should be nil", func() {
 					So(err, ShouldBeNil)
@@ -130,7 +130,7 @@ func TestClient(t *testing.T) {
 				})
 
 				Convey("When time is equal to minute", func() {
-					transactions, err := client.Transactions(btcmxn, "minute")
+					transactions, err := client.Transactions(BTCMXN, "minute")
 
 					Convey("err should be nil", func() {
 						So(err, ShouldBeNil)
@@ -143,7 +143,7 @@ func TestClient(t *testing.T) {
 			})
 
 			Convey("An the book is eth_mxn", func() {
-				transactions, err := client.Transactions(ethmxn, "")
+				transactions, err := client.Transactions(ETHMXN, "")
 
 				Convey("err should be nil", func() {
 					So(err, ShouldBeNil)
@@ -154,7 +154,7 @@ func TestClient(t *testing.T) {
 				})
 
 				Convey("When time is equal to minute", func() {
-					transactions, err := client.Transactions(ethmxn, "minute")
+					transactions, err := client.Transactions(ETHMXN, "minute")
 
 					Convey("err should be nil", func() {
 						So(err, ShouldBeNil)
@@ -200,7 +200,7 @@ func registerResponder() {
 			var ticker *Ticker
 			v := req.URL.Query()
 			book := v.Get("book")
-			if book == ethmxn {
+			if book == ETHMXN {
 				ticker = &Ticker{
 					High:      "213.97",
 					Last:      "212.30",
@@ -211,7 +211,7 @@ func registerResponder() {
 					Ask:       "212.30",
 					Bid:       "208.27",
 				}
-			} else if book == btcmxn || book == "" {
+			} else if book == BTCMXN || book == "" {
 				ticker = &Ticker{
 					High:      "12700.00",
 					Last:      "12640.00",
@@ -236,7 +236,7 @@ func registerResponder() {
 			var orderBook *OrderBook
 			v := req.URL.Query()
 			book := v.Get("book")
-			if book == ethmxn {
+			if book == ETHMXN {
 				orderBook = &OrderBook{
 					Bids: [][]string{
 						[]string{
@@ -257,7 +257,7 @@ func registerResponder() {
 						},
 					},
 				}
-			} else if book == btcmxn || book == "" {
+			} else if book == BTCMXN || book == "" {
 				orderBook = &OrderBook{
 					Bids: [][]string{
 						[]string{
@@ -298,7 +298,7 @@ func registerResponder() {
 			book := v.Get("book")
 			time := v.Get("time")
 			_ = v.Get("time")
-			if book == ethmxn {
+			if book == ETHMXN {
 				transactions = []*Transaction{
 					&Transaction{
 						Amount: "1.94511553",
@@ -318,7 +318,7 @@ func registerResponder() {
 				if time == "minute" {
 					transactions = transactions[0:1]
 				}
-			} else if book == btcmxn || book == "" {
+			} else if book == BTCMXN || book == "" {
 				transactions = []*Transaction{
 					&Transaction{
 						Amount: "0.02200000",

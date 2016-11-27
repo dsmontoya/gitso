@@ -1,6 +1,8 @@
 package bitso
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"testing"
@@ -192,6 +194,44 @@ func TestClient(t *testing.T) {
 			})
 		})
 	})
+
+	Convey("Given a client with an invalid key", t, func() {
+		config := &Configuration{
+			Key:      "",
+			Secret:   "secret",
+			ClientId: "clientId",
+		}
+		client := NewClient(config)
+
+		Convey("When a request is made", func() {
+			balance := &Balance{}
+			err := client.post(balancePath, balance)
+
+			Convey("err should NOT be nil", func() {
+				So(err, ShouldNotBeNil)
+			})
+		})
+	})
+
+	Convey("Given an empty fields struct", t, func() {
+		f := fields{}
+
+		Convey("When the fields values are set", func() {
+			f.setAuthentication("key", "signature", 1234)
+
+			Convey("The key be equal to \"key\"", func() {
+				So(f.Key, ShouldEqual, "key")
+			})
+
+			Convey("The signature be equal to \"signature\"", func() {
+				So(f.Signature, ShouldEqual, "signature")
+			})
+
+			Convey("The nonce be equal to 1234", func() {
+				So(f.Nonce, ShouldEqual, 1234)
+			})
+		})
+	})
 }
 
 func registerResponder() {
@@ -354,6 +394,32 @@ func registerResponder() {
 				}
 			}
 			resp, err := httpmock.NewJsonResponse(200, transactions)
+			if err != nil {
+				return httpmock.NewStringResponse(500, ""), nil
+			}
+			return resp, nil
+		},
+	)
+	httpmock.RegisterResponder("POST", URL+balancePath,
+		func(req *http.Request) (*http.Response, error) {
+			balance := &Balance{}
+			r := req.Body
+			body, err := ioutil.ReadAll(r)
+			if err != nil {
+				return httpmock.NewStringResponse(500, err.Error()), nil
+			}
+			err = json.Unmarshal(body, balance)
+			if err != nil {
+				return httpmock.NewStringResponse(500, err.Error()), nil
+			}
+			if balance.Key != "key" {
+				e := &Error{
+					Code:    101,
+					Message: "Invalid API Code or Invalid Signature: " + balance.Key,
+				}
+				balance.Error = e
+			}
+			resp, err := httpmock.NewJsonResponse(200, balance)
 			if err != nil {
 				return httpmock.NewStringResponse(500, ""), nil
 			}

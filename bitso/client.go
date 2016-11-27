@@ -1,6 +1,7 @@
 package bitso
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -21,6 +22,49 @@ type Configuration struct {
 	Secret   string
 	ClientId string
 	Sandbox  bool
+}
+
+type Balance struct {
+	fields
+	MXNBalance   string `json:"mxn_balance,omitempty"`
+	BTCBalance   string `json:"btc_balance,omitempty"`
+	MXNReserved  string `json:"mxn_reserved,omitempty"`
+	BTCReserved  string `json:"btc_reserved,omitempty"`
+	MXNAvailable string `json:"mxn_available,omitempty"`
+	BTCAvailable string `json:"btc_available,omitempty"`
+}
+
+// fields is included in every request made to private endpoints
+type fields struct {
+	Key       string `json:"key,omitempty"`
+	Nonce     int64  `json:"nonce,omitempty"`
+	Signature string `json:"signature,omitempty"`
+	Error     *Error `json:"error,omitempty"`
+}
+
+func (a *fields) setAuthentication(key, signature string, nonce int64) {
+	a.Key = key
+	a.Nonce = nonce
+	a.Signature = signature
+}
+
+func (a *fields) getError() *Error {
+	return a.Error
+}
+
+type Error struct {
+	Code    int    `json:"error,omitempty"`
+	Message string `json:"message,omitempty"`
+	Status  int    `json:"status,omitempty"`
+}
+
+func (e *Error) Error() string {
+	return fmt.Sprintf("%s (code: %v)", e.Message, e.Code)
+}
+
+type authBody interface {
+	setAuthentication(key, signature string, nonce int64)
+	getError() *Error
 }
 
 // NewClient returns a new Bitso API client. It receives
@@ -91,6 +135,14 @@ func (c *Client) Transactions(book string, time string) ([]*Transaction, error) 
 	return transactions, nil
 }
 
+func (c *Client) Balance() (*Balance, error) {
+	balance := &Balance{}
+	if err := c.post(balancePath, balance); err != nil {
+		return nil, err
+	}
+	return balance, nil
+}
+
 func (c *Client) getSignature(nonce int64) string {
 	if c.validateConfiguration() == false {
 		panic("can't generate a signature without configuration")
@@ -135,4 +187,30 @@ func (c *Client) get(path string, query *url.Values, schema interface{}) error {
 		return err
 	}
 	return nil
+}
+
+func (c *Client) post(path string, schema authBody) error {
+	nonce := getNonce()
+	signature := c.getSignature(nonce)
+	fmt.Println(schema)
+	schema.setAuthentication(c.configuration.Key, signature, nonce)
+	reqBody, err := json.Marshal(schema)
+	if err != nil {
+		return err
+	}
+	buff := bytes.NewBuffer(reqBody)
+	resp, err := http.Post(URL+path, "application/json", buff)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(body, schema)
+	if err != nil {
+		return err
+	}
+	return schema.getError()
 }

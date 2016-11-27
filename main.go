@@ -30,6 +30,11 @@ func main() {
 		panic(err)
 	}
 	fmt.Println(transactions)
+	transactions, err = client.Transactions(bitso.BTCMXN, "hour")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(transactions)
 	balance, err := client.Balance()
 	if err != nil {
 		fmt.Println("err", err)

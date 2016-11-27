@@ -64,7 +64,12 @@ func (a *fields) setAuthentication(key, signature string, nonce int64) {
 }
 
 func (a *fields) getError() *Error {
-	return a.Error
+	fmt.Println("getError", a.Error)
+	fmt.Println(a.Error != nil)
+	if a.Error != nil {
+		return a.Error
+	}
+	return nil
 }
 
 type Error struct {
@@ -245,8 +250,9 @@ func (c *Client) post(path string, schemas ...interface{}) error {
 	if err != nil {
 		return err
 	}
-	if inf, ok := respSchema.(authBody); ok == true {
-		return inf.getError()
-	}
+	// if inf, ok := respSchema.(authBody); ok == true {
+	// 	err = inf.getError()
+	// 	return err
+	// }
 	return nil
 }

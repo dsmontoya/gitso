@@ -24,6 +24,21 @@ type Configuration struct {
 	Sandbox  bool
 }
 
+type OpenOrders struct {
+	fields
+	Book string `json:"book,omitempty"`
+}
+
+type Order struct {
+	fields
+	Id     string `json:"id,omitempty"`
+	Type   string `json:"type,omitempty"`
+	Price  string `json:"price,omitempty"`
+	Amount string `json:"amount,omitempty"`
+	Status string `json:"status,omitempty"`
+	Book   string `json:"book,omitempty"`
+}
+
 type Balance struct {
 	fields
 	MXNBalance   string `json:"mxn_balance,omitempty"`
@@ -59,6 +74,8 @@ type Error struct {
 }
 
 func (e *Error) Error() string {
+	fmt.Println("message", e.Message)
+	fmt.Println(e.Code)
 	return fmt.Sprintf("%s (code: %v)", e.Message, e.Code)
 }
 
@@ -143,6 +160,15 @@ func (c *Client) Balance() (*Balance, error) {
 	return balance, nil
 }
 
+func (c *Client) OpenOrders() ([]*Order, error) {
+	var orders []*Order
+	openOrders := &OpenOrders{}
+	if err := c.post(openOrdersPath, openOrders, orders); err != nil {
+		return nil, err
+	}
+	return orders, nil
+}
+
 func (c *Client) getSignature(nonce int64) string {
 	if c.validateConfiguration() == false {
 		panic("can't generate a signature without configuration")
@@ -189,28 +215,38 @@ func (c *Client) get(path string, query *url.Values, schema interface{}) error {
 	return nil
 }
 
-func (c *Client) post(path string, schema authBody) error {
+func (c *Client) post(path string, schemas ...interface{}) error {
+	var respSchema interface{}
+	reqSchema := schemas[0].(authBody)
 	nonce := getNonce()
 	signature := c.getSignature(nonce)
-	fmt.Println(schema)
-	schema.setAuthentication(c.configuration.Key, signature, nonce)
-	reqBody, err := json.Marshal(schema)
+	reqSchema.setAuthentication(c.configuration.Key, signature, nonce)
+	payload, err := json.Marshal(reqSchema)
 	if err != nil {
 		return err
 	}
-	buff := bytes.NewBuffer(reqBody)
+	buff := bytes.NewBuffer(payload)
 	resp, err := http.Post(URL+path, "application/json", buff)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
+	if len(schemas) == 2 {
+		respSchema = schemas[1]
+	} else {
+		respSchema = schemas[0]
+	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(body, schema)
+
+	err = json.Unmarshal(body, respSchema)
 	if err != nil {
 		return err
 	}
-	return schema.getError()
+	if inf, ok := respSchema.(authBody); ok == true {
+		return inf.getError()
+	}
+	return nil
 }

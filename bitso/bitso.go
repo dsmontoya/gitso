@@ -15,6 +15,7 @@ const (
 	transactionsPath = "transactions"
 	orderBookPath    = "order_book"
 	balancePath      = "balance"
+	openOrdersPath   = "open_orders"
 )
 
 type Ticker struct {

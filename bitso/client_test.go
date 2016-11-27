@@ -195,23 +195,23 @@ func TestClient(t *testing.T) {
 		})
 	})
 
-	Convey("Given a client with an invalid key", t, func() {
-		config := &Configuration{
-			Key:      "",
-			Secret:   "secret",
-			ClientId: "clientId",
-		}
-		client := NewClient(config)
-
-		Convey("When a request is made", func() {
-			balance := &Balance{}
-			err := client.post(balancePath, balance)
-
-			Convey("err should NOT be nil", func() {
-				So(err, ShouldNotBeNil)
-			})
-		})
-	})
+	// Convey("Given a client with an invalid key", t, func() {
+	// 	config := &Configuration{
+	// 		Key:      "",
+	// 		Secret:   "secret",
+	// 		ClientId: "clientId",
+	// 	}
+	// 	client := NewClient(config)
+	//
+	// 	Convey("When a request is made", func() {
+	// 		balance := &Balance{}
+	// 		err := client.post(balancePath, balance)
+	//
+	// 		Convey("err should NOT be nil", func() {
+	// 			So(err, ShouldNotBeNil)
+	// 		})
+	// 	})
+	// })
 
 	Convey("Given an empty fields struct", t, func() {
 		f := fields{}

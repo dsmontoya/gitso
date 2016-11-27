@@ -168,7 +168,7 @@ func (c *Client) Balance() (*Balance, error) {
 func (c *Client) OpenOrders() ([]*Order, error) {
 	var orders []*Order
 	openOrders := &OpenOrders{}
-	if err := c.post(openOrdersPath, openOrders, orders); err != nil {
+	if err := c.post(openOrdersPath, openOrders, &orders); err != nil {
 		return nil, err
 	}
 	return orders, nil
@@ -248,6 +248,7 @@ func (c *Client) post(path string, schemas ...interface{}) error {
 
 	err = json.Unmarshal(body, respSchema)
 	if err != nil {
+		fmt.Println("respSchema", respSchema)
 		return err
 	}
 	// if inf, ok := respSchema.(authBody); ok == true {

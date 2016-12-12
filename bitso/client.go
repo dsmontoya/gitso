@@ -88,7 +88,7 @@ func (e *Error) Error() string {
 	return fmt.Sprintf("%s (code: %v)", e.Message, e.Code)
 }
 
-type authBody interface {
+type requestBody interface {
 	setAuthentication(key, signature string, nonce int64)
 	getError() error
 }
@@ -226,7 +226,7 @@ func (c *Client) get(path string, query *url.Values, schema interface{}) error {
 
 func (c *Client) post(path string, schemas ...interface{}) error {
 	var respSchema interface{}
-	reqSchema := schemas[0].(authBody)
+	reqSchema := schemas[0].(requestBody)
 	if len(schemas) == 2 {
 		respSchema = schemas[1]
 	} else {
@@ -256,7 +256,7 @@ func (c *Client) post(path string, schemas ...interface{}) error {
 			return err
 		}
 	}
-	if err = respSchema.(authBody).getError(); err != nil {
+	if err = respSchema.(requestBody).getError(); err != nil {
 		return err
 	}
 	return nil

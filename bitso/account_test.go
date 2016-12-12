@@ -4,189 +4,34 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"testing"
 
 	"github.com/jarcoal/httpmock"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestClient(t *testing.T) {
+func TestAccount(t *testing.T) {
 	httpmock.Activate()
 	registerResponder()
 	defer httpmock.DeactivateAndReset()
-	Convey("Given a new Client with a nil Configuration", t, func() {
-		client := NewClient(nil)
 
-		Convey("When is asked for the sandbox", func() {
-			isSanbox := client.IsSandbox()
-
-			Convey("The sanbox should be false", func() {
-				So(isSanbox, ShouldBeFalse)
-			})
-		})
-
-		Convey("Given the ticker path", func() {
-			path := tickerPath
-			ticker := &Ticker{}
-
-			Convey("When the book is btc_mxn", func() {
-				v := &url.Values{}
-				v.Set("book", BTCMXN)
-				err := client.get(path, v, ticker)
-
-				Convey("err should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("The price high should be 12700.00", func() {
-					So(ticker.High, ShouldEqual, "12700.00")
-				})
-			})
-
-			Convey("When the book is eth_mxn", func() {
-				v := &url.Values{}
-				v.Set("book", ETHMXN)
-				err := client.get(path, v, ticker)
-
-				Convey("err should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("The price high should be 213.97", func() {
-					So(ticker.High, ShouldEqual, "213.97")
-				})
-			})
-		})
-
-		Convey("When the ticker is requested", func() {
-			Convey("And the book is btc_mxn", func() {
-				ticker, err := client.Ticker(BTCMXN)
-
-				Convey("err should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("The price high should be 12700.00", func() {
-					So(ticker.High, ShouldEqual, "12700.00")
-				})
-			})
-
-			Convey("And the book is eth_mxn", func() {
-				ticker, err := client.Ticker(ETHMXN)
-
-				Convey("err should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("The price high should be 213.97", func() {
-					So(ticker.High, ShouldEqual, "213.97")
-				})
-			})
-
-			Convey("And the book is invalid", func() {
-				_, err := client.Ticker("invalid_book")
-
-				Convey("An error should occur", func() {
-					So(err, ShouldNotBeNil)
-				})
-			})
-		})
-
-		Convey("When the order book is requested", func() {
-			Convey("An the book is btc_mxn", func() {
-				orderBook, err := client.OrderBook(BTCMXN, false)
-
-				Convey("err should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("The bids should have length 5", func() {
-					So(orderBook.Bids, ShouldHaveLength, 5)
-				})
-			})
-
-			Convey("An the book is eth_mxn", func() {
-				orderBook, err := client.OrderBook(ETHMXN, false)
-
-				Convey("err should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("The bids should have length 4", func() {
-					So(orderBook.Bids, ShouldHaveLength, 4)
-				})
-			})
-		})
-
-		Convey("When the last transactions are requested", func() {
-			Convey("And the book is btc_mxn", func() {
-				transactions, err := client.Transactions(BTCMXN, "")
-
-				Convey("err should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("The transactions should have length 4", func() {
-					So(transactions, ShouldHaveLength, 4)
-				})
-
-				Convey("When time is equal to minute", func() {
-					transactions, err := client.Transactions(BTCMXN, "minute")
-
-					Convey("err should be nil", func() {
-						So(err, ShouldBeNil)
-					})
-
-					Convey("The transactions should have length 2", func() {
-						So(transactions, ShouldHaveLength, 2)
-					})
-				})
-			})
-
-			Convey("An the book is eth_mxn", func() {
-				transactions, err := client.Transactions(ETHMXN, "")
-
-				Convey("err should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("The transactions should have length 2", func() {
-					So(transactions, ShouldHaveLength, 2)
-				})
-
-				Convey("When time is equal to minute", func() {
-					transactions, err := client.Transactions(ETHMXN, "minute")
-
-					Convey("err should be nil", func() {
-						So(err, ShouldBeNil)
-					})
-
-					Convey("The transactions should have length 1", func() {
-						So(transactions, ShouldHaveLength, 1)
-					})
-				})
-			})
-		})
-	})
-
-	Convey("Given a Client with key, secret and id", t, func() {
-		config := &Configuration{
+	Convey("Given an authentication with key, secret and id", t, func() {
+		keys := &Keys{
 			Key:      "key",
 			Secret:   "secret",
 			ClientId: "clientId",
 		}
-		client := NewClient(config)
+		account := Authenticate(keys)
 
 		Convey("When the signature is generated", func() {
-			signature := client.getSignature(getNonce())
+			signature := account.getSignature(getNonce())
 
 			Convey("The signature should NOT be empty", func() {
 				So(signature, ShouldNotBeEmpty)
 			})
 
 			Convey("When a new signature is generated with a new nonce", func() {
-				newSignature := client.getSignature(getNonce())
+				newSignature := account.getSignature(getNonce())
 
 				Convey("The newSignature, should be different", func() {
 					So(newSignature, ShouldNotEqual, signature)
@@ -195,7 +40,7 @@ func TestClient(t *testing.T) {
 		})
 
 		Convey("When the balance is requested", func() {
-			balance, err := client.Balance()
+			balance, err := account.GetBalance()
 
 			Convey("err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -208,17 +53,17 @@ func TestClient(t *testing.T) {
 
 	})
 
-	Convey("Given a client with an invalid key", t, func() {
-		config := &Configuration{
+	Convey("Given an account with an invalid key", t, func() {
+		keys := &Keys{
 			Key:      "",
 			Secret:   "secret",
 			ClientId: "clientId",
 		}
-		client := NewClient(config)
+		account := Authenticate(keys)
 
 		Convey("When a request for the balance is made", func() {
 			balance := &Balance{}
-			err := client.post(balancePath, balance)
+			err := account.post(balancePath, balance)
 
 			Convey("err should be 'Invalid API Code or Invalid Signature:  (code: 101)'", func() {
 				So(err.Error(), ShouldEqual, "Invalid API Code or Invalid Signature:  (code: 101)")
@@ -227,8 +72,8 @@ func TestClient(t *testing.T) {
 
 		Convey("When a request for the open orders is made", func() {
 			var orders []Order
-			openOrders := &OpenOrders{}
-			err := client.post(openOrdersPath, openOrders, &orders)
+			openOrders := &openOrders{}
+			err := account.post(openOrdersPath, openOrders, &orders)
 
 			Convey("err should be 'Invalid API Code or Invalid Signature:  (code: 101)'", func() {
 				So(err.Error(), ShouldEqual, "Invalid API Code or Invalid Signature:  (code: 101)")
@@ -460,7 +305,7 @@ func registerResponder() {
 
 	httpmock.RegisterResponder("POST", URL+openOrdersPath,
 		func(req *http.Request) (*http.Response, error) {
-			openOrders := &OpenOrders{}
+			openOrders := &openOrders{}
 			orders := []*Order{
 				&Order{
 					Amount:   "0.01000000",

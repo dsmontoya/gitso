@@ -4,6 +4,11 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"io/ioutil"
+	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -42,6 +47,58 @@ type Transaction struct {
 	Side   string
 }
 
+func GetTicker(book string) (*Ticker, error) {
+	if validateBook(book) == false {
+		err := errors.New("Invalid book value")
+		return nil, err
+	}
+	ticker := &Ticker{}
+	v := &url.Values{}
+	v.Set("book", book)
+	err := get(tickerPath, v, ticker)
+	if err != nil {
+		return nil, err
+	}
+	return ticker, nil
+}
+
+func GetOrderBook(book string, group bool) (*OrderBook, error) {
+	if validateBook(book) == false {
+		err := errors.New("Invalid book value")
+		return nil, err
+	}
+	orderBook := &OrderBook{}
+	v := &url.Values{}
+	v.Set("book", book)
+	err := get(orderBookPath, v, orderBook)
+	if err != nil {
+		return nil, err
+	}
+	return orderBook, nil
+}
+
+/*
+GetTransactions returns a list of recent trades from the specified book
+and the specified time frame.
+
+Valid time frames are hour and minute. Leaving time blank will set hour as the default frame.
+*/
+func GetTransactions(book string, time string) ([]*Transaction, error) {
+	var transactions []*Transaction
+	if validateBook(book) == false {
+		err := errors.New("Invalid book value")
+		return nil, err
+	}
+	v := &url.Values{}
+	v.Set("book", book)
+	v.Set("time", time)
+	err := get(transactionsPath, v, &transactions)
+	if err != nil {
+		return nil, err
+	}
+	return transactions, nil
+}
+
 func getNonce() int64 {
 	return time.Now().UnixNano()
 }
@@ -56,4 +113,28 @@ func sign(message, key string) string {
 	bytes := mac.Sum(nil)
 	s := hex.EncodeToString(bytes)
 	return s
+}
+
+func get(path string, query *url.Values, schema interface{}) error {
+	u, err := url.Parse(URL + path)
+	if err != nil {
+		return err
+	}
+	if query != nil {
+		u.RawQuery = query.Encode()
+	}
+	resp, err := http.Get(u.String())
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(body, schema)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -3,10 +3,124 @@ package bitso
 import (
 	"testing"
 
+	"github.com/jarcoal/httpmock"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestBitso(t *testing.T) {
+	httpmock.Activate()
+	registerResponder()
+	defer httpmock.DeactivateAndReset()
+	Convey("When the ticker is requested", t, func() {
+		Convey("And the book is btc_mxn", func() {
+			ticker, err := GetTicker(BTCMXN)
+
+			Convey("err should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("The price high should be 12700.00", func() {
+				So(ticker.High, ShouldEqual, "12700.00")
+			})
+		})
+
+		Convey("And the book is eth_mxn", func() {
+			ticker, err := GetTicker(ETHMXN)
+
+			Convey("err should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("The price high should be 213.97", func() {
+				So(ticker.High, ShouldEqual, "213.97")
+			})
+		})
+
+		Convey("And the book is invalid", func() {
+			_, err := GetTicker("invalid_book")
+
+			Convey("An error should occur", func() {
+				So(err, ShouldNotBeNil)
+			})
+		})
+	})
+
+	Convey("When the order book is requested", t, func() {
+		Convey("An the book is btc_mxn", func() {
+			orderBook, err := GetOrderBook(BTCMXN, false)
+
+			Convey("err should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("The bids should have length 5", func() {
+				So(orderBook.Bids, ShouldHaveLength, 5)
+			})
+		})
+
+		Convey("An the book is eth_mxn", func() {
+			orderBook, err := GetOrderBook(ETHMXN, false)
+
+			Convey("err should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("The bids should have length 4", func() {
+				So(orderBook.Bids, ShouldHaveLength, 4)
+			})
+		})
+	})
+
+	Convey("When the last transactions are requested", t, func() {
+		Convey("And the book is btc_mxn", func() {
+			transactions, err := GetTransactions(BTCMXN, "")
+
+			Convey("err should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("The transactions should have length 4", func() {
+				So(transactions, ShouldHaveLength, 4)
+			})
+
+			Convey("When time is equal to minute", func() {
+				transactions, err := GetTransactions(BTCMXN, "minute")
+
+				Convey("err should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				Convey("The transactions should have length 2", func() {
+					So(transactions, ShouldHaveLength, 2)
+				})
+			})
+		})
+
+		Convey("An the book is eth_mxn", func() {
+			transactions, err := GetTransactions(ETHMXN, "")
+
+			Convey("err should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("The transactions should have length 2", func() {
+				So(transactions, ShouldHaveLength, 2)
+			})
+
+			Convey("When time is equal to minute", func() {
+				transactions, err := GetTransactions(ETHMXN, "minute")
+
+				Convey("err should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				Convey("The transactions should have length 1", func() {
+					So(transactions, ShouldHaveLength, 1)
+				})
+			})
+		})
+	})
+
 	Convey("Given a unique nonce", t, func() {
 		nonce := getNonce()
 

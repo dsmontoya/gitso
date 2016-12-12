@@ -31,16 +31,22 @@ type OpenOrders struct {
 
 type Order struct {
 	fields
-	Id     string `json:"id,omitempty"`
-	Type   string `json:"type,omitempty"`
-	Price  string `json:"price,omitempty"`
-	Amount string `json:"amount,omitempty"`
-	Status string `json:"status,omitempty"`
-	Book   string `json:"book,omitempty"`
+	Id       string `json:"id,omitempty"`
+	Type     string `json:"type,omitempty"`
+	Price    string `json:"price,omitempty"`
+	Amount   string `json:"amount,omitempty"`
+	Datetime string `json:"datetime,omitempty"`
+	Status   string `json:"status,omitempty"`
+	Book     string `json:"book,omitempty"`
+}
+
+type request struct {
+	fields
 }
 
 type Balance struct {
 	fields
+	Fee          string `json:"fee,omitempty"`
 	MXNBalance   string `json:"mxn_balance,omitempty"`
 	BTCBalance   string `json:"btc_balance,omitempty"`
 	MXNReserved  string `json:"mxn_reserved,omitempty"`
@@ -54,7 +60,7 @@ type fields struct {
 	Key       string `json:"key,omitempty"`
 	Nonce     int64  `json:"nonce,omitempty"`
 	Signature string `json:"signature,omitempty"`
-	Error     *Error `json:"error,omitempty"`
+	Error     Error  `json:"error,omitempty"`
 }
 
 func (a *fields) setAuthentication(key, signature string, nonce int64) {
@@ -63,11 +69,11 @@ func (a *fields) setAuthentication(key, signature string, nonce int64) {
 	a.Signature = signature
 }
 
-func (a *fields) getError() *Error {
-	fmt.Println("getError", a.Error)
-	fmt.Println(a.Error != nil)
-	if a.Error != nil {
-		return a.Error
+func (a *fields) getError() error {
+	e := a.Error
+	if e.Message != "" {
+		err := errors.New(fmt.Sprintf("%s (code: %v)", e.Message, e.Code))
+		return err
 	}
 	return nil
 }
@@ -79,14 +85,12 @@ type Error struct {
 }
 
 func (e *Error) Error() string {
-	fmt.Println("message", e.Message)
-	fmt.Println(e.Code)
 	return fmt.Sprintf("%s (code: %v)", e.Message, e.Code)
 }
 
 type authBody interface {
 	setAuthentication(key, signature string, nonce int64)
-	getError() *Error
+	getError() error
 }
 
 // NewClient returns a new Bitso API client. It receives
@@ -223,6 +227,11 @@ func (c *Client) get(path string, query *url.Values, schema interface{}) error {
 func (c *Client) post(path string, schemas ...interface{}) error {
 	var respSchema interface{}
 	reqSchema := schemas[0].(authBody)
+	if len(schemas) == 2 {
+		respSchema = schemas[1]
+	} else {
+		respSchema = reqSchema
+	}
 	nonce := getNonce()
 	signature := c.getSignature(nonce)
 	reqSchema.setAuthentication(c.configuration.Key, signature, nonce)
@@ -236,24 +245,19 @@ func (c *Client) post(path string, schemas ...interface{}) error {
 		return err
 	}
 	defer resp.Body.Close()
-	if len(schemas) == 2 {
-		respSchema = schemas[1]
-	} else {
-		respSchema = schemas[0]
-	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
-
 	err = json.Unmarshal(body, respSchema)
 	if err != nil {
-		fmt.Println("respSchema", respSchema)
+		respSchema = &fields{}
+		if err = json.Unmarshal(body, respSchema); err != nil {
+			return err
+		}
+	}
+	if err = respSchema.(authBody).getError(); err != nil {
 		return err
 	}
-	// if inf, ok := respSchema.(authBody); ok == true {
-	// 	err = inf.getError()
-	// 	return err
-	// }
 	return nil
 }

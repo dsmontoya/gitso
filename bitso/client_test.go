@@ -193,25 +193,48 @@ func TestClient(t *testing.T) {
 				})
 			})
 		})
+
+		Convey("When the balance is requested", func() {
+			balance, err := client.Balance()
+
+			Convey("err should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Fee should be 1.0000", func() {
+				So(balance.Fee, ShouldEqual, "1.0000")
+			})
+		})
+
 	})
 
-	// Convey("Given a client with an invalid key", t, func() {
-	// 	config := &Configuration{
-	// 		Key:      "",
-	// 		Secret:   "secret",
-	// 		ClientId: "clientId",
-	// 	}
-	// 	client := NewClient(config)
-	//
-	// 	Convey("When a request is made", func() {
-	// 		balance := &Balance{}
-	// 		err := client.post(balancePath, balance)
-	//
-	// 		Convey("err should NOT be nil", func() {
-	// 			So(err, ShouldNotBeNil)
-	// 		})
-	// 	})
-	// })
+	Convey("Given a client with an invalid key", t, func() {
+		config := &Configuration{
+			Key:      "",
+			Secret:   "secret",
+			ClientId: "clientId",
+		}
+		client := NewClient(config)
+
+		Convey("When a request for the balance is made", func() {
+			balance := &Balance{}
+			err := client.post(balancePath, balance)
+
+			Convey("err should be 'Invalid API Code or Invalid Signature:  (code: 101)'", func() {
+				So(err.Error(), ShouldEqual, "Invalid API Code or Invalid Signature:  (code: 101)")
+			})
+		})
+
+		Convey("When a request for the open orders is made", func() {
+			var orders []Order
+			openOrders := &OpenOrders{}
+			err := client.post(openOrdersPath, openOrders, &orders)
+
+			Convey("err should be 'Invalid API Code or Invalid Signature:  (code: 101)'", func() {
+				So(err.Error(), ShouldEqual, "Invalid API Code or Invalid Signature:  (code: 101)")
+			})
+		})
+	})
 
 	Convey("Given an empty fields struct", t, func() {
 		f := fields{}
@@ -402,7 +425,15 @@ func registerResponder() {
 	)
 	httpmock.RegisterResponder("POST", URL+balancePath,
 		func(req *http.Request) (*http.Response, error) {
-			balance := &Balance{}
+			balance := &Balance{
+				Fee:          "1.0000",
+				BTCAvailable: "46.67902107",
+				MXNAvailable: "26864.57",
+				BTCBalance:   "46.67902107",
+				MXNBalance:   "26864.57",
+				BTCReserved:  "0.00000000",
+				MXNReserved:  "0.00",
+			}
 			r := req.Body
 			body, err := ioutil.ReadAll(r)
 			if err != nil {
@@ -413,13 +444,69 @@ func registerResponder() {
 				return httpmock.NewStringResponse(500, err.Error()), nil
 			}
 			if balance.Key != "key" {
-				e := &Error{
+				e := Error{
 					Code:    101,
 					Message: "Invalid API Code or Invalid Signature: " + balance.Key,
 				}
 				balance.Error = e
 			}
 			resp, err := httpmock.NewJsonResponse(200, balance)
+			if err != nil {
+				return httpmock.NewStringResponse(500, ""), nil
+			}
+			return resp, nil
+		},
+	)
+
+	httpmock.RegisterResponder("POST", URL+openOrdersPath,
+		func(req *http.Request) (*http.Response, error) {
+			openOrders := &OpenOrders{}
+			orders := []*Order{
+				&Order{
+					Amount:   "0.01000000",
+					Datetime: "2015-11-12 12:37:01",
+					Price:    "5600.00",
+					Id:       "543cr2v32a1h684430tvcqx1b0vkr93wd694957cg8umhyrlzkgbaedmf976ia3v",
+					Type:     "1",
+					Status:   "1",
+				},
+				&Order{
+					Amount:   "0.12680000",
+					Datetime: "2015-11-12 12:33:47",
+					Price:    "4000.00",
+					Id:       "qlbga6b600n3xta7actori10z19acfb20njbtuhtu5xry7z8jswbaycazlkc0wf1",
+					Type:     "0",
+					Status:   "0",
+				},
+				&Order{
+					Amount:   "1.12560000",
+					Datetime: "2015-11-12 12:33:23",
+					Price:    "6123.55",
+					Id:       "d71e3xy2lowndkfmde6bwkdsvw62my6058e95cbr08eesu0687i5swyot4rf2yf8",
+					Type:     "1",
+					Status:   "0",
+				},
+			}
+			r := req.Body
+			body, err := ioutil.ReadAll(r)
+			if err != nil {
+				return httpmock.NewStringResponse(500, err.Error()), nil
+			}
+			err = json.Unmarshal(body, openOrders)
+			if err != nil {
+				return httpmock.NewStringResponse(500, err.Error()), nil
+			}
+			if openOrders.Key != "key" {
+				e := Error{
+					Code:    101,
+					Message: "Invalid API Code or Invalid Signature: " + openOrders.Key,
+				}
+				f := fields{
+					Error: e,
+				}
+				return httpmock.NewJsonResponse(200, f)
+			}
+			resp, err := httpmock.NewJsonResponse(200, orders)
 			if err != nil {
 				return httpmock.NewStringResponse(500, ""), nil
 			}

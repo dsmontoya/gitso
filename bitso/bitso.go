@@ -23,7 +23,7 @@ const (
 	openOrdersPath   = "open_orders"
 )
 
-type Ticker struct {
+type TickerInfo struct {
 	High      string
 	Last      string
 	Timestamp string
@@ -34,7 +34,7 @@ type Ticker struct {
 	Bid       string
 }
 
-type OrderBook struct {
+type OrderBookInfo struct {
 	Asks [][]string
 	Bids [][]string
 }
@@ -47,12 +47,12 @@ type Transaction struct {
 	Side   string
 }
 
-func GetTicker(book string) (*Ticker, error) {
+func Ticker(book string) (*TickerInfo, error) {
 	if validateBook(book) == false {
 		err := errors.New("Invalid book value")
 		return nil, err
 	}
-	ticker := &Ticker{}
+	ticker := &TickerInfo{}
 	v := &url.Values{}
 	v.Set("book", book)
 	err := get(tickerPath, v, ticker)
@@ -62,12 +62,12 @@ func GetTicker(book string) (*Ticker, error) {
 	return ticker, nil
 }
 
-func GetOrderBook(book string, group bool) (*OrderBook, error) {
+func OrderBook(book string, group bool) (*OrderBookInfo, error) {
 	if validateBook(book) == false {
 		err := errors.New("Invalid book value")
 		return nil, err
 	}
-	orderBook := &OrderBook{}
+	orderBook := &OrderBookInfo{}
 	v := &url.Values{}
 	v.Set("book", book)
 	err := get(orderBookPath, v, orderBook)
@@ -83,7 +83,7 @@ and the specified time frame.
 
 Valid time frames are hour and minute. Leaving time blank will set hour as the default frame.
 */
-func GetTransactions(book string, time string) ([]*Transaction, error) {
+func Transactions(book string, time string) ([]*Transaction, error) {
 	var transactions []*Transaction
 	if validateBook(book) == false {
 		err := errors.New("Invalid book value")

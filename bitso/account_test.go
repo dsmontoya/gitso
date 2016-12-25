@@ -40,7 +40,7 @@ func TestAccount(t *testing.T) {
 		})
 
 		Convey("When the balance is requested", func() {
-			balance, err := account.GetBalance()
+			balance, err := account.Balance()
 
 			Convey("err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -105,11 +105,11 @@ func TestAccount(t *testing.T) {
 func registerResponder() {
 	httpmock.RegisterResponder("GET", URL+tickerPath,
 		func(req *http.Request) (*http.Response, error) {
-			var ticker *Ticker
+			var ticker *TickerInfo
 			v := req.URL.Query()
 			book := v.Get("book")
 			if book == ETHMXN {
-				ticker = &Ticker{
+				ticker = &TickerInfo{
 					High:      "213.97",
 					Last:      "212.30",
 					Timestamp: "1468809252",
@@ -120,7 +120,7 @@ func registerResponder() {
 					Bid:       "208.27",
 				}
 			} else if book == BTCMXN || book == "" {
-				ticker = &Ticker{
+				ticker = &TickerInfo{
 					High:      "12700.00",
 					Last:      "12640.00",
 					Timestamp: "1468809239",
@@ -141,11 +141,11 @@ func registerResponder() {
 
 	httpmock.RegisterResponder("GET", URL+orderBookPath,
 		func(req *http.Request) (*http.Response, error) {
-			var orderBook *OrderBook
+			var orderBook *OrderBookInfo
 			v := req.URL.Query()
 			book := v.Get("book")
 			if book == ETHMXN {
-				orderBook = &OrderBook{
+				orderBook = &OrderBookInfo{
 					Bids: [][]string{
 						[]string{
 							"10720.00",
@@ -166,7 +166,7 @@ func registerResponder() {
 					},
 				}
 			} else if book == BTCMXN || book == "" {
-				orderBook = &OrderBook{
+				orderBook = &OrderBookInfo{
 					Bids: [][]string{
 						[]string{
 							"210.02",

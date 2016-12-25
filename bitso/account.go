@@ -97,7 +97,7 @@ func Authenticate(keys *Keys) *Account {
 	return &Account{keys}
 }
 
-func (c *Account) GetBalance() (*Balance, error) {
+func (c *Account) Balance() (*Balance, error) {
 	balance := &Balance{}
 	if err := c.post(balancePath, balance); err != nil {
 		return nil, err
@@ -105,7 +105,7 @@ func (c *Account) GetBalance() (*Balance, error) {
 	return balance, nil
 }
 
-func (c *Account) GetOpenOrders() ([]*Order, error) {
+func (c *Account) OpenOrders() ([]*Order, error) {
 	var orders []*Order
 	openOrders := &openOrders{}
 	if err := c.post(openOrdersPath, openOrders, &orders); err != nil {

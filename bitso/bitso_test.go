@@ -13,7 +13,7 @@ func TestBitso(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 	Convey("When the ticker is requested", t, func() {
 		Convey("And the book is btc_mxn", func() {
-			ticker, err := GetTicker(BTCMXN)
+			ticker, err := Ticker(BTCMXN)
 
 			Convey("err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -25,7 +25,7 @@ func TestBitso(t *testing.T) {
 		})
 
 		Convey("And the book is eth_mxn", func() {
-			ticker, err := GetTicker(ETHMXN)
+			ticker, err := Ticker(ETHMXN)
 
 			Convey("err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -37,7 +37,7 @@ func TestBitso(t *testing.T) {
 		})
 
 		Convey("And the book is invalid", func() {
-			_, err := GetTicker("invalid_book")
+			_, err := Ticker("invalid_book")
 
 			Convey("An error should occur", func() {
 				So(err, ShouldNotBeNil)
@@ -47,7 +47,7 @@ func TestBitso(t *testing.T) {
 
 	Convey("When the order book is requested", t, func() {
 		Convey("An the book is btc_mxn", func() {
-			orderBook, err := GetOrderBook(BTCMXN, false)
+			orderBook, err := OrderBook(BTCMXN, false)
 
 			Convey("err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -59,7 +59,7 @@ func TestBitso(t *testing.T) {
 		})
 
 		Convey("An the book is eth_mxn", func() {
-			orderBook, err := GetOrderBook(ETHMXN, false)
+			orderBook, err := OrderBook(ETHMXN, false)
 
 			Convey("err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -73,7 +73,7 @@ func TestBitso(t *testing.T) {
 
 	Convey("When the last transactions are requested", t, func() {
 		Convey("And the book is btc_mxn", func() {
-			transactions, err := GetTransactions(BTCMXN, "")
+			transactions, err := Transactions(BTCMXN, "")
 
 			Convey("err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -84,7 +84,7 @@ func TestBitso(t *testing.T) {
 			})
 
 			Convey("When time is equal to minute", func() {
-				transactions, err := GetTransactions(BTCMXN, "minute")
+				transactions, err := Transactions(BTCMXN, "minute")
 
 				Convey("err should be nil", func() {
 					So(err, ShouldBeNil)
@@ -97,7 +97,7 @@ func TestBitso(t *testing.T) {
 		})
 
 		Convey("An the book is eth_mxn", func() {
-			transactions, err := GetTransactions(ETHMXN, "")
+			transactions, err := Transactions(ETHMXN, "")
 
 			Convey("err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -108,7 +108,7 @@ func TestBitso(t *testing.T) {
 			})
 
 			Convey("When time is equal to minute", func() {
-				transactions, err := GetTransactions(ETHMXN, "minute")
+				transactions, err := Transactions(ETHMXN, "minute")
 
 				Convey("err should be nil", func() {
 					So(err, ShouldBeNil)

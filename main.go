@@ -15,27 +15,27 @@ func main() {
 		ClientId: os.Getenv("BITSO_CLIENT_ID"),
 	}
 	account := bitso.Authenticate(keys)
-	ticker, err := bitso.GetTicker(bitso.BTCMXN)
+	ticker, err := bitso.Ticker(bitso.BTCMXN)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(ticker)
-	orderBook, err := bitso.GetOrderBook(bitso.BTCMXN, false)
+	orderBook, err := bitso.OrderBook(bitso.BTCMXN, false)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(orderBook)
-	transactions, err := bitso.GetTransactions(bitso.BTCMXN, "hour")
+	transactions, err := bitso.Transactions(bitso.BTCMXN, "hour")
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(transactions)
-	balance, err := account.GetBalance()
+	balance, err := account.Balance()
 	if err != nil {
 		fmt.Println("err", err)
 	}
 	fmt.Println("balance", balance)
-	openOrders, err := account.GetOpenOrders()
+	openOrders, err := account.OpenOrders()
 	if err != nil {
 		panic(err)
 	}

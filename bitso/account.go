@@ -114,6 +114,15 @@ func (c *Account) OpenOrders() ([]*Order, error) {
 	return orders, nil
 }
 
+func (c *Account) LookupOrder(id string) ([]*Order, error) {
+	var orders []*Order
+	order := &Order{Id: id}
+	if err := c.post(lookupOrderPath, order, &orders); err != nil {
+		return nil, err
+	}
+	return orders, nil
+}
+
 func (c *Account) getSignature(nonce int64) string {
 	if c.validateKeys() == false {
 		panic("can't generate a signature without keys")
@@ -160,13 +169,13 @@ func (c *Account) post(path string, schemas ...interface{}) error {
 	}
 	err = json.Unmarshal(body, respSchema)
 	if err != nil {
-		respSchema = &fields{}
-		if err = json.Unmarshal(body, respSchema); err != nil {
+		f := &fields{}
+		if err = json.Unmarshal(body, f); err != nil {
 			return err
 		}
-	}
-	if err = respSchema.(requestBody).getError(); err != nil {
-		return err
+		if err = f.getError(); err != nil {
+			return err
+		}
 	}
 	return nil
 }

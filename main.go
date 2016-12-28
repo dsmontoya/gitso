@@ -35,9 +35,14 @@ func main() {
 		fmt.Println("err", err)
 	}
 	fmt.Println("balance", balance)
-	openOrders, err := account.OpenOrders()
+	orders, err := account.OpenOrders()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(openOrders)
+	order := orders[0]
+	orders, err = account.LookupOrder(order.Id)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("orders", orders)
 }

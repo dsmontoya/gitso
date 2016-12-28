@@ -21,6 +21,7 @@ const (
 	orderBookPath    = "order_book"
 	balancePath      = "balance"
 	openOrdersPath   = "open_orders"
+	lookupOrderPath  = "lookup_order"
 )
 
 type TickerInfo struct {
